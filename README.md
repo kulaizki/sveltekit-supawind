@@ -1,38 +1,117 @@
-# sv
+# SvelteKit + Supabase Template
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A starter template for building applications with SvelteKit and Supabase for authentication and database.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- SvelteKit (latest version)
+- Tailwind CSS for styling
+- Supabase for authentication
+- Social login (GitHub, Google)
+- Protected routes
+- Type-safe environment variables
+- Session management
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or later recommended)
+- A Supabase account and project
+
+### Setup
+
+1. Clone this repository
+2. Install dependencies:
 
 ```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+npm install
+# or
+pnpm install
+# or
+yarn install
 ```
 
-## Developing
+3. Create a `.env.local` file in the root directory with your Supabase credentials:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+```
+PUBLIC_SUPABASE_URL=your-supabase-project-url
+PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+PUBLIC_SITE_URL=http://localhost:5173
+```
+
+You can find these values in your Supabase project dashboard under Settings > API.
+
+4. Run the development server:
 
 ```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# or
+pnpm dev
+# or
+yarn dev
 ```
 
-## Building
+5. Visit `http://localhost:5173` to see your application running.
 
-To create a production version of your app:
+## Supabase Setup
 
-```bash
-npm run build
+1. Create a new project in Supabase
+2. Set up authentication providers in Authentication > Settings:
+   - Enable Email/Password sign-in
+   - Set up social providers as needed (GitHub, Google, etc.)
+   - Add your app's URL to the redirect URLs (e.g., `http://localhost:5173/auth/callback`)
+3. Create a `profiles` table for user data (optional):
+
+```sql
+CREATE TABLE public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT,
+  bio TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Set up Row Level Security
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Allow users to read any profile
+CREATE POLICY "Anyone can read profiles" ON public.profiles
+  FOR SELECT USING (true);
+
+-- Allow users to update their own profile
+CREATE POLICY "Users can update their own profile" ON public.profiles
+  FOR UPDATE USING (auth.uid() = id);
 ```
 
-You can preview the production build with `npm run preview`.
+## Project Structure
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- `/src/routes` - SvelteKit routes
+- `/src/lib/components` - Reusable components
+- `/src/lib/stores` - Svelte stores for state management
+- `/src/lib/supabase.ts` - Supabase client setup
+
+## Authentication Flow
+
+This template includes:
+
+- Sign in with email/password
+- Sign in with social providers (GitHub, Google)
+- Protected routes with server-side validation
+- User profile display
+
+## Deployment
+
+This template can be deployed on any platform that supports SvelteKit, such as:
+
+- Vercel
+- Netlify
+- Cloudflare Pages
+- Railway
+- Fly.io
+
+Make sure to set up your environment variables in your deployment platform.
+
+## License
+
+MIT
